@@ -1,0 +1,96 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Highest Prime</title>
+</head>
+
+<body>
+  <h1>Highest Prime!</h1>
+  <h3 id="game">Room: {{nm}}</h3>
+  <h3 id="winner">Waiting for players to finish guessing...</h3>
+  <ul id="player_list"></ul>
+  <input onclick="go_back()" type="submit" value="Play Again!">
+  <script>
+    var game_name = '{{nm}}'
+    var pm = '{{pm}}'
+    
+    const dc = document.cookie
+    const ul = document.getElementById('player_list');
+    const wn = document.getElementById('winner');
+
+    function go_back () {
+        window.location.href = '/'
+    }
+
+    function startLiveUpdate () {
+
+    var j = 0
+    setInterval(function() {
+        
+        if (j < pm)
+        {
+            fetch('/scores/' + game_name).then(function (response) {
+                return response.json()
+            }).then(function (data) {
+            ul.innerHTML = '';
+            //console.log(data);
+            for (const key in data){
+                var li = document.createElement("li");
+                var prm = "is not"
+                if (data[key]["prime"] === 1){prm = "is"}
+                li.innerHTML = key + " guessed " + data[key]["guess"] + " which " + prm + " prime!"
+                ul.appendChild(li);
+                j += 1;
+            }
+                if (j < pm){ j = 0} //else { console.log('start')}
+                else{
+                    var res = {}
+                    var primes = []
+                    for (const key in data){
+                        if (data[key]["prime"] === 1) {
+                            res[data[key]["guess"]] = key
+                            primes.push(data[key]["guess"])
+                            primes.sort()
+                            console.log(primes)
+                            //console.log(primes)
+                            //console.log(primes[primes.length - 1])
+                            var winner = res[primes[primes.length - 1]]
+                        }
+                    }
+
+                    //console.log(res)
+                    wn.textContent = winner + ' WINS!'
+                    //console.log(winner)
+                }
+            }).catch(function (error) {
+                console.log(error)
+            });
+        } 
+    },1000);
+       
+        
+    }
+
+    /*
+    function host(){
+        var game_name = document.getElementById('game_name').value;
+        var players = document.getElementById('players').value;
+        fetch('/create/' + game_name + '/' + players).then(function (response) {
+            return response.json()
+        }).then(function (data) {
+            console.log(data)
+        }).catch(function (error) {
+            console.log(error)
+        });
+    }
+    */
+
+    document.addEventListener('DOMContentLoaded',function () {
+        startLiveUpdate()
+    });
+  </script>
+  <!--<script src="js/scripts.js"></script>-->
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!-- templates/start.html -->
+<html>
+  <head>
+    <title>Highest Prime</title>
+  </head>
+  <body>
+    <h1>Enter the highest prime you can think of less than {{cap}}</h1>
+    <h3>You have <span id="countdown">10</span> seconds</h3>
+  </body>
+</html>
+
+
+<script type="text/javascript">
+    
+    // Total seconds to wait
+    var seconds = 20;
+    
+    function countdown() {
+        seconds = seconds - 1;
+        if (seconds < 0) {
+            // Chnage your redirection link here
+            window.location = "/results";
+        } else {
+            // Update remaining seconds
+            document.getElementById("countdown").innerHTML = seconds;
+            // Count down using javascript
+            window.setTimeout("countdown()", 1000);
+        }
+    }
+    
+    // Run countdown function
+    countdown();
+    
+</script>

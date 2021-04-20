@@ -1,0 +1,97 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Highest Prime</title>
+</head>
+
+<body>
+  <h1>Highest Prime!</h1>
+  <h3>Room: {{nm}} | Username: {{pl}}</h3>
+  <h3 id="cap">Pick a prime number under ???</h3>
+  <h3 id="countdown">Waiting for players...</h3>
+  <h3>Guess:</h3>
+  <input type="text" id="guess_box">
+  <input onclick="guess()" type="submit" value="Guess">
+  <h3>players:</h3>
+  <ul id="player_list"></ul>
+  <script>
+    var game_name = '{{nm}}'
+    var uname = '{{pl}}'
+    var cp = '{{cp}}'
+    var pm = '{{pm}}'
+    var prime_guess = 0
+    var r_sec = 15
+    //console.log(cp)
+    //console.log(pm)
+    
+    const dc = document.cookie
+    const ul = document.getElementById('player_list');
+    const cap = document.getElementById('cap');
+    const cnt = document.getElementById('countdown');
+
+    function guess () {
+      var prime_guess = document.getElementById('guess_box').value;
+      fetch('/guess/' + game_name + '/' + uname + '/' + prime_guess).then(function (response) {
+        window.location.href = '/results/' + game_name
+      }).catch(function (error) {
+        console.log(error)
+      });
+    }
+
+    function startLiveUpdate () {
+
+    var j = 0;
+    setInterval(function() {
+        
+        if (j < pm)
+        {
+            fetch('/list_players/' + game_name).then(function (response) {
+                return response.json()
+            }).then(function (data) {
+            ul.innerHTML = '';
+            for (const key in data){
+                var li = document.createElement("li");
+                li.innerHTML = key
+                ul.appendChild(li);
+                j += 1;
+                //console.log(key)
+            }
+            if (j < pm){ j = 0} //else { console.log('start')}
+            }).catch(function (error) {
+                console.log(error)
+            });
+        } else {
+            if (r_sec == 0){
+                window.location.href = '/results/' + game_name
+            }
+            cap.textContent = 'Pick a prime number under ' + cp
+            cnt.textContent = 'You have ' + r_sec + ' seconds remaining...'
+            r_sec = r_sec - 1
+        }
+    },1000);
+        
+    }
+
+    /*
+    function host(){
+        var game_name = document.getElementById('game_name').value;
+        var players = document.getElementById('players').value;
+        fetch('/create/' + game_name + '/' + players).then(function (response) {
+            return response.json()
+        }).then(function (data) {
+            console.log(data)
+        }).catch(function (error) {
+            console.log(error)
+        });
+    }
+    */
+
+    document.addEventListener('DOMContentLoaded',function () {
+        startLiveUpdate()
+    });
+  </script>
+  <!--<script src="js/scripts.js"></script>-->
+</body>
+</html>

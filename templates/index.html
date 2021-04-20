@@ -1,0 +1,107 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Highest Prime</title>
+</head>
+
+<body>
+  <h1>Highest Prime</h1>
+   <h3 id="player">0</h3>
+   <div>host game (enter game name and number of players):</div>
+   <input type="text" id="game_name" placeholder="name (e.g. optimus)">
+   <input type="text" id="players" placeholder="players (e.g. 3)" pattern="[0-9]+">
+   <input onclick="host()" type="submit" value="Host Game">
+   <br/>
+   <br/>
+   <div>join game:</div>
+   <ul id="gamelist"></ul>
+  <script>
+    
+    function setCookie(cname, cvalue, exdays) {
+      var d = new Date();
+      d.setTime(d.getTime() + (exdays*24*60*60*1000));
+      var expires = "expires="+ d.toUTCString();
+      document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    }
+
+    function getCookie(cname) {
+      var name = cname + "=";
+      var decodedCookie = decodeURIComponent(document.cookie);
+      var ca = decodedCookie.split(';');
+      for(var i = 0; i <ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+      }
+      return "";
+    }
+
+    function startLiveUpdate () {
+    //const r = document.getElementById('rand');
+    const p = document.getElementById('player');
+    const ul = document.getElementById('gamelist');
+    const dc = document.cookie
+    p.textContent = 'You are ???'
+
+    var uname = getCookie("username");
+    if (uname == ""){
+        var username  = prompt("enter username","dude" + Math.floor(Math.random() * 10000));
+
+        fetch('/register/' + username).then(function (response) {
+           console.log(response.json())
+        })
+
+        setCookie("username",username,1)
+        uname = getCookie("username");
+    } 
+    p.textContent = 'You are ' + uname
+
+    setInterval(function() {
+        fetch('/list_games').then(function (response) {
+            return response.json()
+        }).then(function (data) {
+        ul.innerHTML = '';
+        for (const key in data){
+            var li = document.createElement("li");
+            li.innerHTML = '<a href="/play/' + key + '/' + uname + '">' + key + '</a>'
+            ul.appendChild(li);
+        }
+                
+        }).catch(function (error) {
+            console.log(error)
+        });
+    },1000);
+        
+    }
+
+    function host(){
+        var uname = getCookie("username");
+        if (uname == ""){
+            var username  = prompt("enter username","dude" + Math.floor(Math.random() * 1000));
+            setCookie("username",username,1)
+            uname = getCookie("username");
+        } 
+        var game_name = document.getElementById('game_name').value;
+        var players = document.getElementById('players').value;
+        fetch('/create/' + game_name + '/' + players).then(function (response) {
+            return response.json()
+        }).then(function (data) {
+            window.location.href = "/play/" + game_name + "/" + uname;
+        }).catch(function (error) {
+            console.log(error)
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded',function () {
+        startLiveUpdate()
+    });
+  </script>
+  <!--<script src="js/scripts.js"></script>-->
+</body>
+</html>
